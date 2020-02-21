@@ -1,0 +1,4 @@
+[deps]
+BlackBoxOptim = "a134a8b2-14d6-55f6-9291-3336d3ab0209"
+Mimi = "e4e893b0-ee5e-52ea-8111-44b3bdec128c"
+MimiDICE2016 = "ab869bb0-c23d-11e9-310e-47ac58ee0562"
