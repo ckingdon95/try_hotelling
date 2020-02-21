@@ -1,4 +1,4 @@
-@defcomp welfare1 begin
+@defcomp welfare2 begin
     CEMUTOTPER      = Variable(index=[time])    #Period utility
     CUMCEMUTOTPER   = Variable(index=[time])    #Cumulative period utility
     PERIODU         = Variable(index=[time])    #One period utility function
@@ -23,16 +23,17 @@
         # Define function for CEMUTOTPER
         v.CEMUTOTPER[t] = v.PERIODU[t] * p.l[t] * p.rr[t]
 
+        # added by CK for Hotelling optimization:
+        if p.CCA[t] > p.fosslim
+            v.CEMUTOTPER[t] = p.penalty
+        end
+
         # Define function for CUMCEMUTOTPER
         v.CUMCEMUTOTPER[t] = v.CEMUTOTPER[t] + (!is_first(t) ? v.CUMCEMUTOTPER[t-1] : 0)
 
         # Define function for UTILITY
         if is_last(t)
             v.UTILITY = 5 * p.scale1 * v.CUMCEMUTOTPER[t] + p.scale2
-            # added by CK for Hotlling optimization:
-            if p.CCA[t] > p.fosslim
-                v.UTILITY = p.penalty
-            end
         end
     end
 end
