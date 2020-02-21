@@ -84,6 +84,17 @@ function _get_model3(tfp, fosslim)
     return m
 end
 
+function _get_model4(tfp)
+    m = MimiDICE2016.get_model()
+    set_dimension!(m, :time, years)
+    delete!(m, :totalfactorproductivity)
+    set_param!(m, :grosseconomy, :AL, tfp)
+    update_param!(m, :MIU, zeros(100))
+    set_param!(m, :neteconomy, :DAMAGES, zeros(nyears))
+
+    return m
+end
+
 function _run_optimization1(tfp, fosslim, penalty, max_steps)
     m = _get_model1(tfp, fosslim, penalty)
     run(m)
@@ -134,6 +145,30 @@ function _run_optimization3(tfp, fosslim, max_steps)
         m.mi.md.external_params[:initial_MIU].values.data = x
         run(m)
         return -m[:welfare, :UTILITY]
+    end
+
+    res = bboptimize(
+        _eval; 
+        SearchRange=(0., 1.0), 
+        NumDimensions=nyears, 
+        Method=:adaptive_de_rand_1_bin_radiuslimited, 
+        MaxSteps=max_steps
+    )
+
+    return m, res
+end
+
+function _run_optimization4(tfp, fosslim, max_steps, penalty_factor)
+    m = _get_model4(tfp)
+    run(m)
+
+    function _eval(x)
+        m.mi.md.external_params[:MIU].values.data = x
+        run(m)
+
+        penalty = penalty_factor * max(m[:emissions, :CCA][end] - fosslim, 0)
+
+        return -(m[:welfare, :UTILITY] - penalty)
     end
 
     res = bboptimize(
