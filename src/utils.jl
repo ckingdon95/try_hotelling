@@ -95,6 +95,19 @@ function _get_model4(tfp)
     return m
 end
 
+# Returns a version of DICE2016 where MIU in every year is set to 1 - fosslim/CCA[end]
+function _get_model5(tfp, fosslim)
+    m = MimiDICE2016.get_model()
+    set_dimension!(m, :time, years)
+    delete!(m, :totalfactorproductivity)
+    set_param!(m, :grosseconomy, :AL, tfp)
+    update_param!(m, :MIU, zeros(100))
+    run(m)
+
+    update_param!(m, :MIU, ones(100) * (1 - fosslim / m[:emissions, :CCA][end]))
+    return m
+end
+
 function _run_optimization1(tfp, fosslim, penalty, max_steps)
     m = _get_model1(tfp, fosslim, penalty)
     run(m)
