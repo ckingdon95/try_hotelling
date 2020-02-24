@@ -18,4 +18,5 @@ explore(m4, title = "m4 - David's way (penalty factor)")
 
 # Gives the same solution for MIU to 3 decimal places
 isapprox.(m2[:emissions, :MIU][1:end-1], m3[:emissions, :final_MIU][1:end-1], atol=1e-3)
+isapprox.(m2[:emissions, :MIU][1:end-1], m4[:emissions, :MIU][1:end-1], atol=1e-3)
 
