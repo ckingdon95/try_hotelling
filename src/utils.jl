@@ -65,7 +65,7 @@ end
 #   where cumulativve emissions cannot exceed the fosslim. Abatement is forced to stay below, and there are abatamente costs.
 function _get_model3(tfp, fosslim)
     m = MimiDICE2016.get_model()
-    set_dimension!(m, :time, 2015:5:2300)
+    set_dimension!(m, :time, years)
     delete!(m, :totalfactorproductivity)
     set_param!(m, :grosseconomy, :AL, tfp)
 

@@ -27,11 +27,9 @@
     cap_hit::Bool = Variable()
 
     function run_timestep(p, v, d, t)
-		#Define SIG0
-            # v.SIG0 = p.e0/(p.YGROSS[1] * (1 - p.MIU[1]))
+
         if is_first(t)
             v.cap_hit = false
-            # v.SIG0 = p.e0 / p.YGROSS[t] * (1 - p.initial_MIU[t]) # change for this capped version
         end 
 
 		#Define function for GSIG
@@ -51,7 +49,6 @@
         #Define function for EIND
         # v.EIND[t] = v.SIGMA[t] * p.YGROSS[t] * (1 - p.MIU[t])
         # added for this capped version:
-        # if !is_first(t) && isapprox(v.CCA[t-1], p.fosslim, atol=1e-4)
         if v.cap_hit
             v.final_MIU[t] = 1
         else
@@ -65,9 +62,6 @@
 		else
 			v.ETREE[t] = v.ETREE[t - 1] * (1 - p.deland)
 		end
-
-        #Define function for E
-        # v.E[t] = v.EIND[t] + v.ETREE[t]
 		
 		#Define function for CUMETREE
 		if is_first(t)
@@ -86,20 +80,11 @@
         # added for this capped version:
         next_CCA = v.CCA[t] + (v.EIND[t] * 5/3.66)
         if (!v.cap_hit) && (next_CCA > p.fosslim)
-            # println(gettime(t))
-            # println(p.initial_MIU[t])
-            # println(next_CCA)
-            # println(v.EIND[t])
-
-            # v.final_MIU[t] = (next_CCA - p.fosslim) / (v.EIND[t] * 5/3.66)
-            # v.EIND[t] = v.EIND[t] * (1 - v.final_MIU[t])
 
             v.EIND[t] = v.EIND[t] - (next_CCA - p.fosslim) * 3.66/5
             v.final_MIU[t] =  1 - v.EIND[t] / (v.SIGMA[t] * p.YGROSS[t])
 
             v.cap_hit = true
-
-            # println(v.final_MIU[t])
         end
             
         #Define function for E
