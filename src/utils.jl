@@ -95,8 +95,9 @@ function _get_model4(tfp)
     return m
 end
 
-# Returns a version of DICE2016 where MIU in every year is set to 1 - fosslim/CCA[end]
-function _get_model5(tfp, fosslim)
+# Returns a version of DICE2016 where emissions are reduced by a constant ration such that 
+#   fosslim is reached in final year
+function _get_model5(tfp, fosslim; return_original = false)
     m = MimiDICE2016.get_model()
     set_dimension!(m, :time, years)
     delete!(m, :totalfactorproductivity)
@@ -104,8 +105,19 @@ function _get_model5(tfp, fosslim)
     update_param!(m, :MIU, zeros(100))
     run(m)
 
-    update_param!(m, :MIU, ones(100) * (1 - fosslim / m[:emissions, :CCA][end]))
-    return m
+    ratio = fosslim / m[:emissions, :CCA][end]
+    reduced_emissions = m[:emissions, :EIND] .* ratio + m[:emissions, :ETREE]
+
+    m2 = Model(m)
+    delete!(m2, :emissions)
+    set_param!(m2, :co2cycle, :E, reduced_emissions)
+    set_param!(m2, :neteconomy, :SIGMA, zeros(nyears))  # need to set to something, doesn't matter because abatement will be zero
+
+    if return_original
+        m2, m
+    else
+        return m2
+    end
 end
 
 function _run_optimization1(tfp, fosslim, penalty, max_steps)
